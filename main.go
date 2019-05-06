@@ -70,8 +70,8 @@ func main() {
 		}
 	}
 
-	var selectedSerialNum int
 	fmt.Print("Select suitable serial: ")
+	var selectedSerialNum int
 	n, err := fmt.Scanf("%d\n", &selectedSerialNum)
 	if err != nil {
 		fmt.Println(err)
@@ -85,9 +85,10 @@ func main() {
 	selectedSerial := serials[selectedSerialNum-1]
 	centerDevice := centerDevice_FindBySerial(centerDevices, selectedSerial)
 	if centerDevice != nil {
-		var choice string
 		fmt.Printf("Rebuild Center #%d? ", centerDevice.Num)
+		var choice string
 		if _, err := fmt.Scanf("%s\n", &choice); (err != nil) || (choice != "y") {
+			fmt.Println("Nothing/wrong selected")
 			return
 		}
 	} else {
@@ -97,7 +98,12 @@ func main() {
 		} else {
 			nextNum = centerDevices[len(centerDevices)-1].Num + 1
 		}
-		fmt.Printf("New Center #%d\n", nextNum)
+
+		fmt.Printf("New Center #%d? ", nextNum)
+		var newNextNum int
+		if n, err := fmt.Scanf("%d\n", &newNextNum); (err == nil) && (n == 1) {
+			nextNum = newNextNum
+		}
 
 		centerDevice = &CenterDevice{nextNum, *selectedSerial, time.Now()}
 
@@ -125,8 +131,10 @@ func main() {
 	}
 
 	fmt.Println("Building apk...")
-	cmd = exec.Command("gradlew", "-PserialKey="+centerDevice.Serial.Key,
-		"-PserialValue="+centerDevice.Serial.Value, "assembleRelease")
+	cmd = exec.Command("gradlew",
+		"-PserialKey="+centerDevice.Serial.Key,
+		"-PserialValue="+centerDevice.Serial.Value,
+		"assembleRelease")
 	output, err = cmd.CombinedOutput()
 	if err != nil {
 		fmt.Printf("%s\n", output)

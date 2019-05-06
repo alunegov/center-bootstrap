@@ -20,9 +20,10 @@ type CenterDeviceSerial struct {
 }
 
 type CenterDevice struct {
-	Num     int
-	Serial  CenterDeviceSerial
-	AddTime time.Time
+	Num       int
+	Serial    CenterDeviceSerial
+	AndroidId string
+	AddTime   time.Time
 }
 
 type CenterDeviceList []*CenterDevice
@@ -82,6 +83,10 @@ func main() {
 		return
 	}
 
+	fmt.Print("ANDROID_ID: ")
+	androidId := ""
+	_, _ = fmt.Scanf("%s\n", &androidId)
+
 	selectedSerial := serials[selectedSerialNum-1]
 	centerDevice := centerDevice_FindBySerial(centerDevices, selectedSerial)
 	if centerDevice != nil {
@@ -90,6 +95,10 @@ func main() {
 		if _, err := fmt.Scanf("%s\n", &choice); (err != nil) || (choice != "y") {
 			fmt.Println("Nothing/wrong selected")
 			return
+		}
+
+		if androidId != "" {
+			centerDevice.AndroidId = androidId
 		}
 	} else {
 		nextNum := 0
@@ -105,14 +114,15 @@ func main() {
 			nextNum = newNextNum
 		}
 
-		centerDevice = &CenterDevice{nextNum, *selectedSerial, time.Now()}
+		centerDevice = &CenterDevice{nextNum, *selectedSerial, androidId, time.Now()}
 
-		fmt.Printf("Saving %s...\n", CenterDevicesDb)
 		centerDevices = append(centerDevices, centerDevice)
-		if err := centerDevice_Store(centerDevices); err != nil {
-			fmt.Println(err)
-			return
-		}
+	}
+
+	fmt.Printf("Saving %s...\n", CenterDevicesDb)
+	if err := centerDevice_Store(centerDevices); err != nil {
+		fmt.Println(err)
+		return
 	}
 
 	logFilePath := path.Join(path.Join(LogsPath, fmt.Sprintf(`C%d.txt`, centerDevice.Num)))
@@ -131,10 +141,17 @@ func main() {
 	}
 
 	fmt.Println("Building apk...")
-	cmd = exec.Command("gradlew",
-		"-PserialKey="+centerDevice.Serial.Key,
-		"-PserialValue="+centerDevice.Serial.Value,
-		"assembleRelease")
+	if centerDevice.AndroidId == "" {
+		cmd = exec.Command("gradlew",
+			"-PserialKey="+centerDevice.Serial.Key,
+			"-PserialValue="+centerDevice.Serial.Value,
+			"assembleRelease")
+	} else {
+		cmd = exec.Command("gradlew",
+			"-PserialKey=ANDROID_ID",
+			"-PserialValue="+centerDevice.AndroidId,
+			"assembleRelease")
+	}
 	output, err = cmd.CombinedOutput()
 	if err != nil {
 		fmt.Printf("%s\n", output)

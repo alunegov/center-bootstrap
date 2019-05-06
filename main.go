@@ -32,7 +32,7 @@ const CenterDevicesDb = `./CenterDevices.json`
 const CenterVersion = "1.5"
 const LogsPath = `./_log`
 const ApkOutputPath = `./app/build/outputs/apk`
-const DeviceApkPath = `/sdcard/Download`
+const DeviceApkPath = `/sdcard/Download/`
 
 func main() {
 	fmt.Printf("Loading %s...\n", CenterDevicesDb)

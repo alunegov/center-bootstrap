@@ -182,7 +182,7 @@ func centerDevice_FindAll() (CenterDeviceList, error) {
 }
 
 func centerDevice_Store(list CenterDeviceList) error {
-	data, err := json.Marshal(list)
+	data, err := json.MarshalIndent(list, "", "    ")
 	if err != nil {
 		return err
 	}

@@ -54,7 +54,10 @@ func main() {
 
 	fmt.Println("Detecting device serial...")
 	serials := make([]*CenterDeviceSerial, 0)
-	re := regexp.MustCompile(`\[(.+)\]: \[(.+)\]`)
+	// из строки [gsm.serial]: [VPR081831768                                                10P] выдираем пару
+	// gsm.serial - VPR081831768. Часть после пробела в серийнике отбрасываем - так делали раньше вручную и проверка
+	// в Центровке ориентируется на для длину reference-строки.
+	re := regexp.MustCompile(`\[(.+)\]: \[(\S+).*\]`)
 	reader := bytes.NewReader(output)
 	scanner := bufio.NewScanner(reader)
 	for scanner.Scan() {
